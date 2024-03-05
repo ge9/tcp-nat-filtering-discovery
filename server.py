@@ -30,15 +30,18 @@ def start_server():
         except socket.timeout as e:
             continue
         client_ip, client_port = client_address
+        client_socket.settimeout(5)
         print(f"from {client_ip}:{client_port}:")
-        message = client_socket.recv(1024).decode('utf-8')
-        print(f"received: {message}")
         try:
+            message = client_socket.recv(1024).decode('utf-8')
+            print(f"received: {message}")
             rec = json.loads(message)
             nonce = str(rec["nonce"])
             wait=rec["wait"]+0
-        except Exception:
-            print("parse error")
+        except Exception as e:
+            print("input error")
+            print(e)
+            client_socket.close()
             continue
         # the second socket
         socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,50 +60,50 @@ def start_server():
             socket2.close()
             print("no connection received at the secondary port")
             continue
+        client_socket2.settimeout(4)
         print(client_socket2.recv(1024).decode('utf-8'))
         client_ip2, client_port2 = client_address2
         # ACK with client information
         client_socket2.send(("{"+f"""
         "you": "{client_ip2}:{client_port2}"
         """+"}").encode('utf-8'))
-        time.sleep(max(min(wait,0.5), 5))
-        print("end waiting")
         client_socket2.shutdown(2)
         client_socket2.close()
+        time.sleep(max(min(wait,1), 5))
+        print("end waiting")
         #socket2.shutdown(2)
         socket2.close()
-        time.sleep(0.5)# wait for the port released
-        fu1=fu2=fu3=None
+        def send_nonce(srcaddr, srcport):
+            socket3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            socket3.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            socket3.settimeout(5)
+            try:
+                socket3.bind((srcaddr, srcport))
+                socket3.connect((client_ip2,client_port))
+                print("connected",socket3.getsockname())
+            except socket.timeout as e:
+                print("timed out",socket3.getsockname())
+                socket3.shutdown(2)
+                socket3.close()
+                return
+            except Exception as e:
+                print("er"+srcaddr+str(srcport))
+                print(e)
+                return
+            socket3.send(nonce.encode('utf-8'))
+            socket3.shutdown(2)
+            socket3.close()
+            print("socket3 closed")
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            fn1 = executor.submit(send_nonce, LOCAL_ADDR, ALT_PORT, client_ip2, client_port, nonce)
-            fn2 = executor.submit(send_nonce, LOCAL_ADDR, 0, client_ip2, client_port, nonce)
-            fn3 = executor.submit(send_nonce, OTHER_ADDR, 0, client_ip2, client_port, nonce)
+            fn1 = executor.submit(send_nonce, LOCAL_ADDR, ALT_PORT)
+            fn2 = executor.submit(send_nonce, LOCAL_ADDR, 0)
+            fn3 = executor.submit(send_nonce, OTHER_ADDR, 0)
         fn1.result()
         fn2.result()
         fn3.result()
         client_socket.send(("done").encode('utf-8'))
         print("send")
 
-def send_nonce(srcaddr, srcport, destip, destport, nonce):
-    socket3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket3.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    socket3.settimeout(5)
-    try:
-        socket3.bind((srcaddr, srcport))
-        socket3.connect((destip,destport))
-        print("connected",socket3.getsockname())
-    except socket.timeout as e:
-        print("timed out",socket3.getsockname())
-        socket3.shutdown(2)
-        socket3.close()
-        return
-    except Exception as e:
-        print("er"+srcaddr+str(srcport))
-        print(e)
-        return
-    socket3.send(nonce.encode('utf-8'))
-    socket3.shutdown(2)
-    socket3.close()
-    print("socket3 closed")
+
 if __name__ == "__main__":
     start_server()
