@@ -14,13 +14,15 @@ def start_client():
     client_socket.settimeout(10)
     client_socket.bind((CLIENT_ADDR, CLIENT_PORT))
     client_socket.connect((SERVER_ADDR, SERVER_PORT))
-    _myaddr, myport = client_socket.getsockname()
+    myaddr, myport = client_socket.getsockname()
+    peeraddr, peerport = client_socket.getpeername()
 
     # client's waiting time (in seconds)
     timeout = 1
     # additional waiting time for server
     LATENCY = 1
     nonce = str(random.randint(0, 65535))
+    print(f"connecting from {myaddr}:{myport} to {peeraddr}:{peerport}")
     print("nonce="+str(nonce))
     message = "{"+f"""
     "nonce": {nonce},
