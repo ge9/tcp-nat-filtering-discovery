@@ -3,7 +3,10 @@ import socket
 import time
 import signal
 import sys
+import struct
 import concurrent.futures
+import requests
+import os
 server_socket = None
 LOCAL_ADDR=sys.argv[1]
 LOCAL_PORT=int(sys.argv[2])
@@ -46,6 +49,8 @@ def start_server():
         # the second socket
         socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # wait 2 secs (max) when closed
+        socket2.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 2))
         socket2.bind((LOCAL_ADDR, ALT_PORT))
         socket2.settimeout(8)
         socket2.listen(1)
@@ -67,37 +72,37 @@ def start_server():
         client_socket2.send(("{"+f"""
         "you": "{client_ip2}:{client_port2}"
         """+"}").encode('utf-8'))
-        client_socket2.shutdown(2)
         client_socket2.close()
         time.sleep(max(min(wait,1), 5))
         print("end waiting")
-        #socket2.shutdown(2)
         socket2.close()
-        def send_nonce(srcaddr, srcport):
+        def send_nonce(srcaddr, srcport, use_proxy):
             socket3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             socket3.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             socket3.settimeout(5)
             try:
                 socket3.bind((srcaddr, srcport))
-                socket3.connect((client_ip2,client_port))
-                print("connected",socket3.getsockname())
+                if use_proxy and 'http_proxy' in os.environ:
+                    _response = requests.get(f'http://{client_ip2}:{client_port}/{nonce}',proxies={"http":os.environ['http_proxy']},timeout=5)
+                    print("done")
+                else:
+                    socket3.connect((client_ip2,client_port))
+                    print("connected",socket3.getsockname())
+                    socket3.send(nonce.encode('utf-8'))
+                    socket3.close()
+                    print("socket3 closed")
             except socket.timeout as e:
                 print("timed out",socket3.getsockname())
-                socket3.shutdown(2)
                 socket3.close()
                 return
             except Exception as e:
-                print("er"+srcaddr+str(srcport))
+                print("er"+srcaddr+":"+str(srcport))
                 print(e)
                 return
-            socket3.send(nonce.encode('utf-8'))
-            socket3.shutdown(2)
-            socket3.close()
-            print("socket3 closed")
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            fn1 = executor.submit(send_nonce, LOCAL_ADDR, ALT_PORT)
-            fn2 = executor.submit(send_nonce, LOCAL_ADDR, 0)
-            fn3 = executor.submit(send_nonce, OTHER_ADDR, 0)
+            fn1 = executor.submit(send_nonce, LOCAL_ADDR, ALT_PORT, False)
+            fn2 = executor.submit(send_nonce, LOCAL_ADDR, 0, False)
+            fn3 = executor.submit(send_nonce, OTHER_ADDR, 0, True)
         fn1.result()
         fn2.result()
         fn3.result()

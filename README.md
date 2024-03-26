@@ -9,7 +9,7 @@ The client accepts the test packets for some time and shows the result.
 # Usage
 ## server
 `python server.py LOCAL_ADDR LOCAL_PORT LOCAL_PORT2 LOCAL_PORT2_ADVERTISED ALT_LOCAL_ADDR`
-`LOCAL_ADDR` and `LOCAL_PORT` is the main address/port. `LOCAL_PORT2` is the secondary port, which is advertised as `LOCAL_PORT2_ADVERTISED` for the client. The `ALT_LOCAL_ADDR` is used as the outgoing port for the third test packet.
+`LOCAL_ADDR` and `LOCAL_PORT` is the main address/port. `LOCAL_PORT2` is the secondary port, which is advertised as `LOCAL_PORT2_ADVERTISED` for the client. The `ALT_LOCAL_ADDR` is used as the outgoing port for the third test packet. If environment variable `http_proxy` is set, the third test packet will be sent through the proxy.
 
 ## client
 `client.py SERVER_ADDR_OR_HOSTNAME SERVER_PORT LOCAL_ADDR LOCAL_PORT`
