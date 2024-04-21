@@ -40,7 +40,7 @@ def start_client():
     client_socket2.settimeout(5)
     client_socket2.bind((CLIENT_ADDR, myport))
     client_socket2.connect((SERVER_ADDR, secondary_port))
-    client_socket2.send("ok".encode('utf-8'))
+    client_socket2.send(message.encode('utf-8'))
     response2 = json.loads(client_socket2.recv(1024))
     client_socket2.close()
     print("from the secondary port:", response2)
