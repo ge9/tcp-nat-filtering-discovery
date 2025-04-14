@@ -66,6 +66,8 @@ def start_server():
             print("no connection received at the secondary port")
             continue
         client_socket2.settimeout(4)
+        #should we intentionally send RST packet?
+        #client_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
         print(client_socket2.recv(1024).decode('utf-8'))
         client_ip2, client_port2 = client_address2
         # ACK with client information
@@ -106,7 +108,7 @@ def start_server():
         fn1.result()
         fn2.result()
         fn3.result()
-        client_socket.send(("done").encode('utf-8'))
+        client_socket.send(("done:"+nonce).encode('utf-8'))
         print("send")
 
 

@@ -1,0 +1,52 @@
+listening...
+Traceback (most recent call last):
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 116, in <module>
+    start_server()
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 32, in start_server
+    client_socket, client_address = server_socket.accept()
+                                    ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 295, in accept
+    fd, addr = self._accept()
+               ^^^^^^^^^^^^^^
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 17, in signal_handler
+    server_socket.close()
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'close'
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 66, in apport_excepthook
+    import apport.report
+  File "/usr/lib/python3/dist-packages/apport/__init__.py", line 8, in <module>
+    from apport.report import Report
+  File "/usr/lib/python3/dist-packages/apport/report.py", line 45, in <module>
+    import apport.fileutils
+  File "/usr/lib/python3/dist-packages/apport/fileutils.py", line 32, in <module>
+    from problem_report import ProblemReport
+  File "/usr/lib/python3/dist-packages/problem_report.py", line 20, in <module>
+    import email.mime.base
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1322, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1262, in _find_spec
+  File "<frozen importlib._bootstrap>", line 984, in find_spec
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 17, in signal_handler
+    server_socket.close()
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'close'
+
+Original exception was:
+Traceback (most recent call last):
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 116, in <module>
+    start_server()
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 32, in start_server
+    client_socket, client_address = server_socket.accept()
+                                    ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 295, in accept
+    fd, addr = self._accept()
+               ^^^^^^^^^^^^^^
+  File "/home/user0/B/softwares/tcp-nat-filtering-discovery/server.py", line 17, in signal_handler
+    server_socket.close()
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'close'
